@@ -1,22 +1,50 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Ini tambahan supaya bisa pindah halaman
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [role, setRole] = useState('pelanggan');
-  const router = useRouter(); // Inisialisasi router
+  const [role, setRole] = useState("pelanggan");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const inputClassName =
+    "w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-[#4a3728]";
 
-  // Fungsi untuk menangani saat tombol login diklik
-  const handleLogin = (e) => {
-    e.preventDefault(); // Supaya halaman tidak refresh
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    // Logika pindah halaman sesuai folder yang kamu buat
-    if (role === 'admin') {
-      router.push('/admin');
-    } else if (role === 'penjahit') {
-      router.push('/penjahit');
-    } else {
-      router.push('/pelanggan');
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login gagal. Silakan coba lagi.");
+        return;
+      }
+
+      router.push(`/${data.user.role}`);
+      router.refresh();
+    } catch {
+      setError("Terjadi gangguan saat login. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -29,29 +57,31 @@ export default function LoginPage() {
             <span className="text-2xl">✂️</span>
             <h1 className="text-2xl font-bold text-[#4a3728]">JahitKu</h1>
           </div>
-          <p className="text-gray-500 text-sm">Selamat Datang! Silakan login untuk melanjutkan</p>
+          <p className="text-sm text-gray-600">
+            Selamat Datang! Silakan login untuk melanjutkan
+          </p>
         </div>
 
         {/* Role Selector */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <button 
-            type="button" // Tambahkan type button agar tidak trigger submit form
-            onClick={() => setRole('pelanggan')}
-            className={`p-3 rounded-lg border text-xs flex flex-col items-center gap-2 transition-all ${role === 'pelanggan' ? 'border-[#4a3728] bg-orange-50 text-[#4a3728]' : 'border-gray-200 text-gray-500'}`}
+          <button
+            type="button"
+            onClick={() => setRole("pelanggan")}
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-xs transition-all ${role === "pelanggan" ? "border-[#4a3728] bg-orange-50 text-[#4a3728]" : "border-gray-200 text-gray-700"}`}
           >
             <span className="text-xl">👤</span> Pelanggan
           </button>
-          <button 
+          <button
             type="button"
-            onClick={() => setRole('admin')}
-            className={`p-3 rounded-lg border text-xs flex flex-col items-center gap-2 transition-all ${role === 'admin' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-500'}`}
+            onClick={() => setRole("admin")}
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-xs transition-all ${role === "admin" ? "border-blue-600 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-700"}`}
           >
             <span className="text-xl">🛡️</span> Admin
           </button>
-          <button 
+          <button
             type="button"
-            onClick={() => setRole('penjahit')}
-            className={`p-3 rounded-lg border text-xs flex flex-col items-center gap-2 transition-all ${role === 'penjahit' ? 'border-green-600 bg-green-50 text-green-600' : 'border-gray-200 text-gray-500'}`}
+            onClick={() => setRole("penjahit")}
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-xs transition-all ${role === "penjahit" ? "border-green-600 bg-green-50 text-green-700" : "border-gray-200 text-gray-700"}`}
           >
             <span className="text-xl">🧵</span> Penjahit
           </button>
@@ -60,38 +90,73 @@ export default function LoginPage() {
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input 
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
               required
-              type="email" 
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Masukkan email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a3728] outline-none transition-all"
+              className={inputClassName}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input 
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
               required
-              type="password" 
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Masukkan password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a3728] outline-none transition-all"
+              className={inputClassName}
             />
           </div>
-          
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <label className="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" className="rounded" /> Ingat saya
+
+          <div className="flex items-center justify-between text-xs text-gray-600">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 text-[#4a3728]"
+              />{" "}
+              Ingat saya
             </label>
-            <a href="#" className="hover:underline">Lupa password?</a>
+            <a href="#" className="font-medium text-gray-600 hover:underline">
+              Lupa password?
+            </a>
           </div>
 
-          <button 
+          {error && (
+            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
+          <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full py-3 bg-[#4a3728] text-white rounded-lg font-semibold hover:bg-[#3d2d21] transition-colors mt-4 shadow-md active:scale-95"
           >
-            Login sebagai {role.charAt(0).toUpperCase() + role.slice(1)}
+            {isSubmitting
+              ? "Memproses..."
+              : `Login sebagai ${role.charAt(0).toUpperCase() + role.slice(1)}`}
           </button>
         </form>
+
+        {role === "pelanggan" && (
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Belum punya akun pelanggan?{" "}
+            <Link
+              href="/register"
+              className="font-bold text-[#4a3728] hover:underline"
+            >
+              Daftar di sini
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

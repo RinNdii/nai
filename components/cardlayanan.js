@@ -1,10 +1,8 @@
-// components/cardlayanan.js
-import Link from 'next/link'; // Import Link supaya bisa berpindah halaman
+import Link from "next/link";
 
 export default function CardLayanan({ judul, deskripsi, icon }) {
   return (
-    // Kita bungkus seluruh kartu dengan Link
-    <Link href="/pelanggan/buat-pesanan"> 
+    <Link href={`/pelanggan/buat-pesanan?layanan=${encodeURIComponent(judul)}`}>
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-orange-50 flex flex-col items-center text-center transition-all hover:shadow-md hover:-translate-y-1 cursor-pointer h-full">
         <div className="w-20 h-20 bg-orange-50 rounded-2xl mb-6 flex items-center justify-center text-4xl">
           {icon}

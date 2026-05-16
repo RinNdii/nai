@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Navbar from "@/components/navbar";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,18 +11,25 @@ export default function Home() {
         {/* Teks Utama */}
         <div className="md:w-1/2 space-y-6">
           <h2 className="text-6xl font-serif text-[#4a3728] leading-tight font-bold">
-            Jahit Sesuai Gayamu, <br/> Dengan Kualitas Terbaik
+            Jahit Sesuai Gayamu, <br /> Dengan Kualitas Terbaik
           </h2>
           <p className="text-gray-600 text-lg">
-            Kami siap membantu mewujudkan pakaian impianmu dengan hasil jahitan rapi, profesional, dan bahan pilihan yang nyaman dipakai.
+            Kami siap membantu mewujudkan pakaian impianmu dengan hasil jahitan
+            rapi, profesional, dan bahan pilihan yang nyaman dipakai.
           </p>
           <div className="flex gap-4">
-            <button className="bg-[#4a3728] text-white px-8 py-4 rounded-md font-semibold hover:bg-[#3d2d21] transition-all">
+            <Link
+              href="/login"
+              className="bg-[#4a3728] text-white px-8 py-4 rounded-md font-semibold hover:bg-[#3d2d21] transition-all"
+            >
               Lihat Layanan
-            </button>
-            <button className="border-2 border-[#4a3728] text-[#4a3728] px-8 py-4 rounded-md font-semibold hover:bg-[#f5e6d3] transition-all">
+            </Link>
+            <Link
+              href="/register"
+              className="border-2 border-[#4a3728] text-[#4a3728] px-8 py-4 rounded-md font-semibold hover:bg-[#f5e6d3] transition-all"
+            >
               Tentang Kami
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -28,9 +37,11 @@ export default function Home() {
         <div className="md:w-1/2 flex justify-end mt-12 md:mt-0">
           <div className="relative">
             <div className="bg-[#e9dcc9] rounded-t-full w-[400px] h-[500px] flex items-end justify-center overflow-hidden border-b-8 border-[#4a3728]">
-              <img 
-                src="/images/mannequin.png" 
-                alt="Mannequin" 
+              <Image
+                src="/images/mannequin.png.jpg"
+                alt="Mannequin"
+                width={400}
+                height={500}
                 className="w-full object-contain"
               />
             </div>

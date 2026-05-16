@@ -4,20 +4,50 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  nama     String
-  role     String @default("pelanggan")
+  id                 Int       @id @default(autoincrement())
+  email              String    @unique
+  password           String
+  nama               String
+  role               String    @default("pelanggan")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  sesi               Session[]
+  pesananPelanggan   Pesanan[] @relation("PelangganPesanan")
+  pesananPenjahit    Pesanan[] @relation("PenjahitPesanan")
 }
 
 model Pesanan {
+  id               Int       @id @default(autoincrement())
+  kode             String    @unique
+  layanan          String
+  deskripsi        String?
+  metodePembayaran String
+  referensiUrl     String?
+  lingkarDada      Float?
+  lebarBahu        Float?
+  lingkarPinggang  Float?
+  lingkarPanggul   Float?
+  panjangLengan    Float?
+  tinggiBadan      Float?
+  status           String    @default("Menunggu")
+  tanggalAmbil     DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  pelangganId      Int
+  penjahitId       Int?
+  pelanggan        User      @relation("PelangganPesanan", fields: [pelangganId], references: [id])
+  penjahit         User?     @relation("PenjahitPesanan", fields: [penjahitId], references: [id])
+}
+
+model Session {
   id        Int      @id @default(autoincrement())
-  layanan   String
-  deskripsi String?
-  tanggal   DateTime
-  status    String   @default("Menunggu")
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

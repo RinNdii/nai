@@ -3,6 +3,7 @@ export default function StatusBadge({ status }) {
   const colors = {
     "Menunggu": "bg-yellow-100 text-yellow-700",
     "Diproses": "bg-blue-100 text-blue-700",
+    "Proses": "bg-blue-100 text-blue-700",
     "Selesai": "bg-green-100 text-green-700",
   };
 
