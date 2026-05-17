@@ -2,6 +2,13 @@
   "name": "prisma-tailorid",
   "version": "0.1.0",
   "private": true,
+  "_catatanScripts": {
+    "prisma:generate": "Membuat Prisma Client berdasarkan schema Prisma terbaru.",
+    "prisma:push": "Menyinkronkan schema Prisma ke database SQLite tanpa migration file.",
+    "prisma:seed": "Mengisi database dengan data demo awal seperti user dan pesanan.",
+    "db:setup": "Menjalankan generate, push, dan seed sekaligus untuk setup database awal.",
+    "prisma:studio": "Membuka Prisma Studio agar isi database bisa dilihat lewat browser."
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
