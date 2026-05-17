@@ -23,10 +23,50 @@ const seedUsers = [
   },
 ];
 
+const seedLayanan = [
+  {
+    nama: "Jahit Kebaya",
+    deskripsi: "Jahit kebaya modern maupun tradisional",
+    harga: 450000,
+    icon: "👗",
+  },
+  {
+    nama: "Jahit Seragam",
+    deskripsi: "Seragam sekolah, kantor, komunitas, dan lainnya",
+    harga: 350000,
+    icon: "👔",
+  },
+  {
+    nama: "Jahit Pakaian Pria",
+    deskripsi: "Kemeja, jas, celana, dan kebutuhan busana pria",
+    harga: 400000,
+    icon: "🧥",
+  },
+  {
+    nama: "Jahit Dress",
+    deskripsi: "Dress pesta, casual, maupun formal",
+    harga: 500000,
+    icon: "💃",
+  },
+  {
+    nama: "Permak Pakaian",
+    deskripsi: "Mengecilkan, memotong, atau memperbaiki jahitan",
+    harga: 150000,
+    icon: "✂️",
+  },
+  {
+    nama: "Lainnya",
+    deskripsi: "Layanan jahit lain sesuai kebutuhan pelanggan",
+    harga: 250000,
+    icon: "🧵",
+  },
+];
+
 const seedOrders = [
   {
     kode: "JHT-1001",
     layanan: "Jahit Kebaya",
+    harga: 450000,
     deskripsi: "Kebaya modern warna krem dengan furing halus",
     metodePembayaran: "Bank BCA",
     lingkarDada: 88,
@@ -38,17 +78,22 @@ const seedOrders = [
     status: "Diproses",
     tanggalAmbil: new Date("2026-05-20T09:00:00.000Z"),
     pelangganEmail: "pelanggan@jahitku.com",
-    penjahitEmail: "penjahit@jahitku.com ",
+    penjahitEmail: "penjahit@jahitku.com",
   },
 ];
 
 async function main() {
   await prisma.session.deleteMany();
   await prisma.pesanan.deleteMany();
+  await prisma.layanan.deleteMany();
   await prisma.user.deleteMany();
 
   for (const user of seedUsers) {
     await prisma.user.create({ data: user });
+  }
+
+  for (const layanan of seedLayanan) {
+    await prisma.layanan.create({ data: layanan });
   }
 
   for (const order of seedOrders) {
@@ -58,11 +103,15 @@ async function main() {
     const penjahit = await prisma.user.findUnique({
       where: { email: order.penjahitEmail },
     });
+    const layanan = await prisma.layanan.findUnique({
+      where: { nama: order.layanan },
+    });
 
     await prisma.pesanan.create({
       data: {
         kode: order.kode,
         layanan: order.layanan,
+        harga: order.harga,
         deskripsi: order.deskripsi,
         metodePembayaran: order.metodePembayaran,
         lingkarDada: order.lingkarDada,
@@ -74,6 +123,7 @@ async function main() {
         status: order.status,
         tanggalAmbil: order.tanggalAmbil,
         pelangganId: pelanggan.id,
+        layananId: layanan?.id ?? null,
         penjahitId: penjahit ? penjahit.id : null,
       },
     });

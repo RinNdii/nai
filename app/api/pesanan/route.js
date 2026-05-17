@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
-import { LAYANAN_OPTIONS, PAYMENT_METHODS, ROLES } from "@/lib/constants";
+import { PAYMENT_METHODS, ROLES } from "@/lib/constants";
 import { generateOrderCode, serializeOrder } from "@/lib/order-utils";
 import prisma from "@/lib/prisma";
 
@@ -20,7 +20,7 @@ export async function GET() {
   if (!user) {
     return NextResponse.json(
       { message: "Silakan login terlebih dahulu." },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -49,26 +49,41 @@ export async function POST(request) {
   if (!user || user.role !== ROLES.PELANGGAN) {
     return NextResponse.json(
       { message: "Hanya pelanggan yang dapat membuat pesanan." },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
   const body = await request.json();
 
-  if (!body.layanan || !body.tanggalAmbil || !body.metodePembayaran) {
+  if (!body.layananId || !body.tanggalAmbil || !body.metodePembayaran) {
     return NextResponse.json(
-      { message: "Layanan, tanggal ambil, dan metode pembayaran wajib diisi." },
-      { status: 400 }
+      {
+        message: "Layanan, tanggal ambil, dan metode pembayaran wajib diisi.",
+      },
+      { status: 400 },
     );
   }
 
-  const layananValid = LAYANAN_OPTIONS.some((item) => item.judul === body.layanan);
   const pembayaranValid = PAYMENT_METHODS.includes(body.metodePembayaran);
 
-  if (!layananValid || !pembayaranValid) {
+  if (!pembayaranValid) {
     return NextResponse.json(
-      { message: "Pilihan layanan atau pembayaran tidak valid." },
-      { status: 400 }
+      { message: "Pilihan metode pembayaran tidak valid." },
+      { status: 400 },
+    );
+  }
+
+  const layanan = await prisma.layanan.findFirst({
+    where: {
+      id: Number(body.layananId),
+      aktif: true,
+    },
+  });
+
+  if (!layanan) {
+    return NextResponse.json(
+      { message: "Layanan yang dipilih tidak tersedia." },
+      { status: 400 },
     );
   }
 
@@ -80,7 +95,8 @@ export async function POST(request) {
   const order = await prisma.pesanan.create({
     data: {
       kode: generateOrderCode(),
-      layanan: body.layanan,
+      layanan: layanan.nama,
+      harga: layanan.harga,
       deskripsi: body.deskripsi?.trim() || null,
       metodePembayaran: body.metodePembayaran,
       referensiUrl: body.referensiUrl?.trim() || null,
@@ -92,6 +108,7 @@ export async function POST(request) {
       tinggiBadan: parseMeasurement(body.tinggiBadan),
       tanggalAmbil: new Date(body.tanggalAmbil),
       pelangganId: user.id,
+      layananId: layanan.id,
       penjahitId: defaultTailor?.id ?? null,
     },
     include: {

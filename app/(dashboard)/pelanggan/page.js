@@ -1,19 +1,14 @@
 import CardLayanan from "@/components/cardlayanan";
 import Navbar from "@/components/navbar";
 import { requireUser } from "@/lib/auth";
-import { LAYANAN_OPTIONS } from "@/lib/constants";
-
-const layananIcons = {
-  "Jahit Kebaya": "👗",
-  "Jahit Seragam": "👔",
-  "Jahit Pakaian Pria": "🧥",
-  "Jahit Dress": "💃",
-  "Permak Pakaian": "✂️",
-  Lainnya: "🧵",
-};
+import prisma from "@/lib/prisma";
 
 export default async function PelangganPage() {
   const user = await requireUser("pelanggan");
+  const layananList = await prisma.layanan.findMany({
+    where: { aktif: true },
+    orderBy: { nama: "asc" },
+  });
 
   return (
     <div className="bg-[#fdf8f4] min-h-screen">
@@ -26,14 +21,22 @@ export default async function PelangganPage() {
         </header>
 
         <div id="layanan" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {LAYANAN_OPTIONS.map((item) => (
-            <CardLayanan 
-              key={item.judul}
-              judul={item.judul}
-              deskripsi={item.deskripsi}
-              icon={layananIcons[item.judul] ?? "🧵"}
-            />
-          ))}
+          {layananList.length > 0 ? (
+            layananList.map((item) => (
+              <CardLayanan
+                key={item.id}
+                id={item.id}
+                judul={item.nama}
+                deskripsi={item.deskripsi}
+                harga={item.harga}
+                icon={item.icon ?? "🧵"}
+              />
+            ))
+          ) : (
+            <div className="col-span-full rounded-3xl border border-dashed border-orange-100 bg-white p-10 text-center text-gray-400">
+              Belum ada layanan aktif yang tersedia saat ini.
+            </div>
+          )}
         </div>
       </main>
     </div>

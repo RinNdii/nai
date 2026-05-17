@@ -44,11 +44,11 @@ Pastikan komputer sudah memiliki **Node.js 20.9 atau lebih baru**.
 
 Gunakan role yang sesuai saat login.
 
-| Role | Email | Password |
-| --- | --- | --- |
+| Role      | Email                    | Password       |
+| --------- | ------------------------ | -------------- |
 | Pelanggan | `pelanggan@jahitku.test` | `pelanggan123` |
-| Admin | `admin@jahitku.test` | `admin123` |
-| Penjahit | `penjahit@jahitku.test` | `penjahit123` |
+| Admin     | `admin@jahitku.test`     | `admin123`     |
+| Penjahit  | `penjahit@jahitku.test`  | `penjahit123`  |
 
 ## Catatan
 

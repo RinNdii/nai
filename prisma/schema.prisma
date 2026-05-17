@@ -24,6 +24,7 @@ model Pesanan {
   id               Int       @id @default(autoincrement())
   kode             String    @unique
   layanan          String
+  harga            Int       @default(0)
   deskripsi        String?
   metodePembayaran String
   referensiUrl     String?
@@ -39,8 +40,22 @@ model Pesanan {
   updatedAt        DateTime  @updatedAt
   pelangganId      Int
   penjahitId       Int?
+  layananId        Int?
+  layananData      Layanan?  @relation(fields: [layananId], references: [id])
   pelanggan        User      @relation("PelangganPesanan", fields: [pelangganId], references: [id])
   penjahit         User?     @relation("PenjahitPesanan", fields: [penjahitId], references: [id])
+}
+
+model Layanan {
+  id          Int       @id @default(autoincrement())
+  nama        String    @unique
+  deskripsi   String
+  harga       Int
+  icon        String?   @default("🧵")
+  aktif       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  pesananList Pesanan[]
 }
 
 model Session {

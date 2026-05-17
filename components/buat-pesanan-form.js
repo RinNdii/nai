@@ -4,24 +4,32 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/navbar";
-import { LAYANAN_OPTIONS, PAYMENT_METHODS } from "@/lib/constants";
+import { PAYMENT_METHODS } from "@/lib/constants";
+import { formatRupiah } from "@/lib/order-utils";
 
-export default function BuatPesananForm({ user, initialLayanan }) {
+export default function BuatPesananForm({
+  user,
+  initialLayananId,
+  layananOptions,
+}) {
   const router = useRouter();
   const fieldClassName =
     "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-[#4a3728]";
-  const layananTitles = useMemo(
-    () => LAYANAN_OPTIONS.map((item) => item.judul),
-    []
-  );
-  const defaultLayanan = layananTitles.includes(initialLayanan)
-    ? initialLayanan
-    : layananTitles[0];
+  const defaultLayananId = useMemo(() => {
+    const parsedId = Number(initialLayananId);
+    const layananTerpilih = layananOptions.find((item) => item.id === parsedId);
+
+    if (layananTerpilih) {
+      return String(layananTerpilih.id);
+    }
+
+    return layananOptions[0] ? String(layananOptions[0].id) : "";
+  }, [initialLayananId, layananOptions]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
-    layanan: defaultLayanan,
+    layananId: defaultLayananId,
     deskripsi: "",
     lingkarDada: "",
     lebarBahu: "",
@@ -31,8 +39,13 @@ export default function BuatPesananForm({ user, initialLayanan }) {
     tinggiBadan: "",
     tanggalAmbil: "",
     referensiUrl: "",
-    metodePembayaran: PAYMENT_METHODS[0],
+    metodePembayaran: "",
   });
+  const selectedLayanan = useMemo(
+    () => layananOptions.find((item) => String(item.id) === form.layananId),
+    [form.layananId, layananOptions],
+  );
+  const hargaOtomatis = selectedLayanan?.harga ?? 0;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -83,7 +96,8 @@ export default function BuatPesananForm({ user, initialLayanan }) {
           <div className="bg-[#4a3728] p-8 text-white md:w-1/3">
             <h2 className="mb-4 text-2xl font-bold">Buat Pesanan</h2>
             <p className="mb-6 text-sm leading-relaxed text-orange-100">
-              Lengkapi detail pesanan Anda untuk mendapatkan hasil jahitan yang sempurna.
+              Lengkapi detail pesanan Anda untuk mendapatkan hasil jahitan yang
+              sempurna.
             </p>
             <div className="space-y-4 text-xs">
               <div className="flex items-center gap-3">
@@ -98,23 +112,49 @@ export default function BuatPesananForm({ user, initialLayanan }) {
           <div className="p-8 md:w-2/3">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Pilih Layanan</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Pilih Layanan
+                </label>
                 <select
-                  name="layanan"
-                  value={form.layanan}
+                  required
+                  name="layananId"
+                  value={form.layananId}
                   onChange={handleChange}
                   className={fieldClassName}
+                  disabled={layananOptions.length === 0}
                 >
-                  {layananTitles.map((layanan) => (
-                    <option key={layanan} className="bg-white text-gray-900">
-                      {layanan}
+                  {layananOptions.length > 0 ? (
+                    layananOptions.map((layanan) => (
+                      <option
+                        key={layanan.id}
+                        value={layanan.id}
+                        className="bg-white text-gray-900"
+                      >
+                        {layanan.nama}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" className="bg-white text-gray-500">
+                      Belum ada layanan aktif
                     </option>
-                  ))}
+                  )}
                 </select>
+                {selectedLayanan ? (
+                  <div className="mt-3 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
+                    <p className="text-sm font-semibold text-[#4a3728]">
+                      {selectedLayanan.icon ?? "🧵"} {selectedLayanan.nama}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                      {selectedLayanan.deskripsi}
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Deskripsi / Catatan</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Deskripsi / Catatan
+                </label>
                 <textarea
                   name="deskripsi"
                   rows="2"
@@ -126,7 +166,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Lingkar Dada</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Lingkar Dada
+                </label>
                 <input
                   name="lingkarDada"
                   type="number"
@@ -140,7 +182,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Lebar Bahu</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Lebar Bahu
+                </label>
                 <input
                   name="lebarBahu"
                   type="number"
@@ -154,7 +198,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Lingkar Pinggang</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Lingkar Pinggang
+                </label>
                 <input
                   name="lingkarPinggang"
                   type="number"
@@ -168,7 +214,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Lingkar Panggul</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Lingkar Panggul
+                </label>
                 <input
                   name="lingkarPanggul"
                   type="number"
@@ -182,7 +230,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Panjang Lengan</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Panjang Lengan
+                </label>
                 <input
                   name="panjangLengan"
                   type="number"
@@ -196,7 +246,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Tinggi</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Tinggi
+                </label>
                 <input
                   name="tinggiBadan"
                   type="number"
@@ -210,7 +262,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Tanggal Pengambilan</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Tanggal Pengambilan
+                </label>
                 <input
                   required
                   name="tanggalAmbil"
@@ -222,7 +276,9 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Link Referensi (Opsional)</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Link Referensi (Opsional)
+                </label>
                 <input
                   name="referensiUrl"
                   type="url"
@@ -234,13 +290,32 @@ export default function BuatPesananForm({ user, initialLayanan }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">Metode Pembayaran</label>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Harga Otomatis
+                </label>
+                <input
+                  value={formatRupiah(hargaOtomatis)}
+                  readOnly
+                  className={`${fieldClassName} bg-[#fdf8f4] font-semibold text-[#4a3728]`}
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Harga dihitung otomatis berdasarkan layanan yang dipilih.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#4a3728]">
+                  Metode Pembayaran
+                </label>
                 <select
                   name="metodePembayaran"
                   value={form.metodePembayaran}
                   onChange={handleChange}
                   className={fieldClassName}
                 >
+                  <option value="" className="bg-white text-gray-500">
+                    Pilih metode pembayaran
+                  </option>
                   {PAYMENT_METHODS.map((item) => (
                     <option key={item} className="bg-white text-gray-900">
                       {item}
@@ -249,20 +324,58 @@ export default function BuatPesananForm({ user, initialLayanan }) {
                 </select>
               </div>
 
+              <div className="rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#4a3728]">
+                  Ringkasan Pembayaran
+                </p>
+                <div className="mt-3 space-y-2 text-sm text-gray-700">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Layanan</span>
+                    <span className="font-semibold text-[#4a3728]">
+                      {selectedLayanan?.nama || "Belum dipilih"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Metode Pembayaran</span>
+                    <span className="font-semibold text-[#4a3728]">
+                      {form.metodePembayaran || "Belum dipilih"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-orange-100 pt-2">
+                    <span className="font-medium">Total Bayar</span>
+                    <span className="text-lg font-bold text-[#4a3728]">
+                      {formatRupiah(hargaOtomatis)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {error && (
-                <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+                <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {error}
+                </p>
               )}
 
               {success && (
-                <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{success}</p>
+                <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {success}
+                </p>
               )}
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting || !form.metodePembayaran || !form.layananId
+                }
                 className="mt-4 w-full rounded-xl bg-[#4a3728] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#3d2d21] active:scale-95"
               >
-                {isSubmitting ? "Menyimpan Pesanan..." : "Kirim Pesanan Sekarang"}
+                {isSubmitting
+                  ? "Memproses Pembayaran..."
+                  : !form.layananId
+                    ? "Layanan Belum Tersedia"
+                    : form.metodePembayaran
+                    ? `Bayar via ${form.metodePembayaran} & Buat Pesanan`
+                    : "Pilih Pembayaran Terlebih Dahulu"}
               </button>
             </form>
           </div>
